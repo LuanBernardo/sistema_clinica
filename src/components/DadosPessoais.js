@@ -17,7 +17,8 @@ const DadosPessoais = () => {
         matricula: '',
         profissao: '',
         sexo: '',
-        tipoFuncionario: ''
+        tipoFuncionario: '',
+        crm: ''
     });
     const [successMessage, setSuccessMessage] = useState('');
 
@@ -70,6 +71,8 @@ const DadosPessoais = () => {
         }
     };
 
+    const isAdminOrAtendente = formData.tipoFuncionario === 'admin' || formData.tipoFuncionario === 'atendente';
+
     if (loading) {
         return <div className="dados-pessoais-container"><p>Carregando dados do usuário...</p></div>;
     }
@@ -80,7 +83,7 @@ const DadosPessoais = () => {
 
     return (
         <div className="dados-pessoais-container">
-                                      <h2 className="historico-paciente-titulo1" style={{ marginTop: '-20px' }}>Dados Pessoais</h2>
+            <h2 className="historico-paciente-titulo1" style={{ marginTop: '-20px' }}>Dados Pessoais</h2>
             {successMessage && (
                 <div className="dados-pessoais-feedback-message success">
                     {successMessage}
@@ -125,8 +128,18 @@ const DadosPessoais = () => {
                             </div>
                             <div className="dados-pessoais-form-group">
                                 <label>Profissão</label>
-                                <input type="text" name="profissao" value={formData.profissao} onChange={handleChange}/>
+                                <input type="text" name="profissao" value={formData.tipoFuncionario} onChange={handleChange} disabled/>
                             </div>
+                            <div className="dados-pessoais-form-group">
+                                <label>Matrícula</label>
+                                <input type="text" name="profissao" value={formData.matricula} onChange={handleChange} disabled/>
+                            </div>
+                            {!isAdminOrAtendente && (
+                                <div className="dados-pessoais-form-group">
+                                    <label>CRM</label>
+                                    <input type="text" name="CRM" value={formData.crm} onChange={handleChange} disabled/>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="dados-pessoais-form-body-container">
@@ -154,7 +167,6 @@ const DadosPessoais = () => {
 };
 
 export default DadosPessoais;
-
 
 
 

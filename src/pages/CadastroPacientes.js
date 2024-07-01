@@ -67,7 +67,7 @@ const CadastroPacientes = () => {
                 nascimento: format(values.nascimento, 'yyyy-MM-dd'), // Formata a data para DD/MM/YYYY
                 profilePic
             });
-            setFeedbackMessage('Usuário cadastrado com sucesso.');
+            setFeedbackMessage('Paciente cadastrado com sucesso.');
             setFeedbackType('success');
         } catch (e) {
             setFeedbackMessage('Erro ao salvar paciente.');
