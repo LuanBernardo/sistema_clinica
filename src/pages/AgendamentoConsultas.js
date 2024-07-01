@@ -32,7 +32,7 @@ const formatDate = (date) => {
 const CpfSearch = ({ cpf, handleChange, cpfStatusMessage, cpfStatusClass }) => {
     return (
         <div className="agendamentoConsulta-idPaciente">
-                        <div className="agendamentoConsulta-title1" style={{ marginTop: '-20px' }}>
+            <div className="agendamentoConsulta-title1" style={{ marginTop: '-20px' }}>
                 <h2>Agendamento de Consultas</h2>
             </div>
             <form className="agendamentoConsulta-form-group" style={{ width: "100%", alignItems: "center" }}>
@@ -70,7 +70,6 @@ const ConsultaForm = ({ handleSubmit, data, setData, hora, setHora, motivo, setM
             <div className="agendamentoConsulta-form-group">
                 <label>Hora</label>
                 <select
-                    type="time"
                     name="hora"
                     value={hora}
                     onChange={(e) => setHora(e.target.value)}
@@ -231,6 +230,18 @@ const AgendamentoConsultas = () => {
             return;
         }
 
+        const consultaExistenteQuery = query(
+            collection(db, "consultasAgendadas"),
+            where("data", "==", data),
+            where("hora", "==", hora),
+            where("cpfConsulta", "==", userData.cpf)
+        );
+        const consultaExistenteSnapshot = await getDocs(consultaExistenteQuery);
+        if (!consultaExistenteSnapshot.empty) {
+            alert('Já existe uma consulta agendada para este paciente neste horário.'+'\nCaso deseje alterá-la, faça via o calendário de consultas.');
+            return;
+        }
+
         const consultaPorHorarioQuery = query(collection(db, "consultasAgendadas"), where("data", "==", data), where("hora", "==", hora));
         const consultaPorHorarioSnapshot = await getDocs(consultaPorHorarioQuery);
         if (consultaPorHorarioSnapshot.size >= 3) {
@@ -260,7 +271,7 @@ const AgendamentoConsultas = () => {
 
         try {
             await addDoc(collection(db, 'consultasAgendadas'), consulta);
-            setSuccessMessage('Consulta agendada com sucesso! ');
+            setSuccessMessage('Consulta agendada com sucesso!');
             setTimeout(() => {
                 setSuccessMessage('');
             }, 5000);
@@ -277,7 +288,6 @@ const AgendamentoConsultas = () => {
 
     return (
         <div className="agendamentoConsulta-main">
-
             <CpfSearch cpf={cpf} handleChange={handleChange} cpfStatusMessage={cpfStatusMessage} cpfStatusClass={cpfStatusClass} />
 
             {userData && (
@@ -358,6 +368,3 @@ const AgendamentoConsultas = () => {
 };
 
 export default AgendamentoConsultas;
-
-
-

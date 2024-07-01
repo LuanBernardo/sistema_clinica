@@ -4,6 +4,7 @@ import { collection, getDocs, deleteDoc, doc, updateDoc } from "firebase/firesto
 import './GerenciamentoUsuarios.css';
 
 const GerenciamentoUsuarios = () => {
+    const [mensagemErro, setMensagemErro] = useState('');
     const [pacientes, setPacientes] = useState([]);
     const [funcionarios, setFuncionarios] = useState([]);
     const [modalAberto, setModalAberto] = useState(false);
@@ -84,13 +85,26 @@ const GerenciamentoUsuarios = () => {
     const handleSalvarAlteracoes = async () => {
         try {
             const usuarioRef = doc(db, `${usuarioSelecionado.tipo}s`, usuarioSelecionado.id);
-
+    
             // Remove a senha do formEdicao se ela não foi alterada
             const dadosAtualizados = { ...formEdicao };
             if (dadosAtualizados.senha === '******') {
                 delete dadosAtualizados.senha;
             }
-
+    
+            // Verificar se CPF, matrícula ou email já existem
+            const querySnapshot = await getDocs(collection(db, `${usuarioSelecionado.tipo}s`));
+            const usuariosExistentes = querySnapshot.docs.map(doc => doc.data());
+    
+            const cpfExiste = usuariosExistentes.some(user => user.cpf === dadosAtualizados.cpf && user.id !== usuarioSelecionado.id);
+            const matriculaExiste = usuariosExistentes.some(user => user.matricula === dadosAtualizados.matricula && user.id !== usuarioSelecionado.id);
+            const emailExiste = usuariosExistentes.some(user => user.email === dadosAtualizados.email && user.id !== usuarioSelecionado.id);
+    
+            if (cpfExiste || matriculaExiste || emailExiste) {
+                setMensagemErro('Alteração não concluída. Pois o CPF, matrícula ou email já está vinculado a outro usuário.');
+                return;
+            }
+    
             await updateDoc(usuarioRef, dadosAtualizados);
             setMensagemSucesso('Alterações salvas com sucesso!');
             usuarioSelecionado.tipo === 'paciente' ? fetchPacientes() : fetchFuncionarios();
@@ -127,18 +141,18 @@ const GerenciamentoUsuarios = () => {
 
     return (
         <div className="main">
-                                      <h2 className="historico-paciente-titulo1" style={{ marginTop: '-20px' }}>Gerenciamento de Usuários</h2>
+            <h2 className="historico-paciente-titulo1" style={{ marginTop: '-20px' }}>Gerenciamento de Usuários</h2>
 
             <div className="content">
-                <div className="toggle-buttons" style = {{marginRight: '450px'}}>
-                    <button style = {{backgroundColor: '#16a086'}} onClick={() => setTabelaVisivel('pacientes')}>Ver Pacientes</button>
-                    <button style = {{backgroundColor: '#16a086'}} onClick={() => setTabelaVisivel('funcionarios')}>Ver Funcionários</button>
-                    <button style = {{backgroundColor: '#16a086'}} onClick={() => setTabelaVisivel('ambos')}>Ver Ambos</button>
+                <div className="toggle-buttons" style={{ marginRight: '450px' }}>
+                    <button style={{ backgroundColor: '#16a086' }} onClick={() => setTabelaVisivel('pacientes')}>Ver Pacientes</button>
+                    <button style={{ backgroundColor: '#16a086' }} onClick={() => setTabelaVisivel('funcionarios')}>Ver Funcionários</button>
+                    <button style={{ backgroundColor: '#16a086' }} onClick={() => setTabelaVisivel('ambos')}>Ver Ambos</button>
                 </div>
 
                 {tabelaVisivel !== 'funcionarios' && (
                     <div>
-                        <h2 style = {{marginLeft: '425px'}}>Pacientes</h2>
+                        <h2 style={{ marginLeft: '425px' }}>Pacientes</h2>
                         <table className="tabela">
                             <thead>
                                 <tr>
@@ -159,8 +173,8 @@ const GerenciamentoUsuarios = () => {
                                         <td>{paciente.email}</td>
                                         <td>{paciente.celular}</td>
                                         <td>{paciente.nascimento}</td>
-                                        <td><button onClick={() => handleEditarUsuario({ ...paciente, tipo: 'paciente' })}>Editar</button></td>
-                                        <td><button onClick={() => handleDeleteUsuario(paciente.id, 'paciente')}>Remover</button></td>
+                                        <td><button className = "alterar" onClick={() => handleEditarUsuario({ ...paciente, tipo: 'paciente' })}>Editar</button></td>
+                                        <td><button className = "deletar" onClick={() => handleDeleteUsuario(paciente.id, 'paciente')}>Remover</button></td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -170,7 +184,7 @@ const GerenciamentoUsuarios = () => {
 
                 {tabelaVisivel !== 'pacientes' && (
                     <div>
-                        <h2 style = {{marginLeft: '400px'}}>Funcionários</h2>
+                        <h2 style={{ marginLeft: '400px' }}>Funcionários</h2>
                         <table className="tabela">
                             <thead>
                                 <tr>
@@ -193,8 +207,8 @@ const GerenciamentoUsuarios = () => {
                                         <td>{funcionario.celular}</td>
                                         <td>{funcionario.matricula}</td> {/* Adicionado campo Matrícula */}
                                         <td>{funcionario.tipoFuncionario}</td> {/* Adicionado campo Tipo de Funcionário */}
-                                        <td><button onClick={() => handleEditarUsuario({ ...funcionario, tipo: 'funcionario' })}>Editar</button></td>
-                                        <td><button onClick={() => handleDeleteUsuario(funcionario.id, 'funcionario')}>Remover</button></td>
+                                        <td><button className="editar" onClick={() => handleEditarUsuario({ ...funcionario, tipo: 'funcionario' })}>Editar</button></td>
+                                        <td><button className="deletar" onClick={() => handleDeleteUsuario(funcionario.id, 'funcionario')}>Remover</button></td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -255,24 +269,22 @@ const GerenciamentoUsuarios = () => {
                                     <label>Tipo de Funcionário:</label>
 
                                     <select
-                                    type="text"
-                                    name="tipoFuncionario"
-                                    value={formEdicao.tipoFuncionario}
-                                    onChange={(e) => setFormEdicao({ ...formEdicao, tipoFuncionario: e.target.value })}
+                                        type="text"
+                                        name="tipoFuncionario"
+                                        value={formEdicao.tipoFuncionario}
+                                        onChange={(e) => setFormEdicao({ ...formEdicao, tipoFuncionario: e.target.value })}
                                     >
-                                        
                                         <option value="">Escolha o tipo</option>
                                         <option value="atendente">Atendente</option>
                                         <option value="medico">Médico</option>
                                         <option value="admin">Admin</option>
-
                                     </select>
                                 </div>
                                 <div>
                                     <label>Senha:</label>
                                     <input
                                         type="password" // Senha mascarada
-                                        value={formEdicao.senha} 
+                                        value={formEdicao.senha}
                                         onChange={(e) => setFormEdicao({ ...formEdicao, senha: e.target.value })}
                                     />
                                 </div>
@@ -290,6 +302,13 @@ const GerenciamentoUsuarios = () => {
             {mensagemSucesso && (
                 <div className="mensagem-sucesso">
                     <p>{mensagemSucesso}</p>
+                </div>
+            )}
+
+            {/* Mensagem de erro */}
+            {mensagemErro && (
+                <div className="mensagem-erro">
+                    <p>{mensagemErro}</p>
                 </div>
             )}
         </div>

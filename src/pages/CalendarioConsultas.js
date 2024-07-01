@@ -105,9 +105,10 @@ const CalendarioConsultas = () => {
         if (confirmacao) {
             try {
                 const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);  // Remove a hora para comparação apenas de data
                 const dataEdicao = new Date(formEdicao.data);
                 
-                if (dataEdicao < hoje) {
+                if (dataEdicao <= hoje) {
                     alert("Por favor, selecione uma data válida, posterior ao dia de hoje.");
                     return;
                 }
@@ -151,6 +152,7 @@ const CalendarioConsultas = () => {
             }
         }
     };
+    
     
     const handleCancelarEdicao = () => {
         setModalAberto(false);

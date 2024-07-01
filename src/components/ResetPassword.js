@@ -12,7 +12,7 @@ const ResetPassword = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const oobCode = searchParams.get('oobCode'); // Obtém o código de redefinição de senha da URL
+    const oobCode = searchParams.get('oobCode');
 
     const handleResetPassword = async () => {
         if (matricula === '' || newPassword === '' || !oobCode) {
@@ -20,27 +20,31 @@ const ResetPassword = () => {
             return;
         }
 
-        try {
-            // Verifica o código de redefinição de senha
-            await confirmPasswordReset(auth, oobCode, newPassword);
+        if (newPassword.length < 6) {
+            setError('A senha precisa ter no mínimo seis caracteres');
+            return;
+        }
 
-            // Atualiza a senha no Firestore
+        try {
             const funcionariosRef = collection(db, 'funcionarios');
             const q = query(funcionariosRef, where('matricula', '==', matricula));
             const querySnapshot = await getDocs(q);
 
-            if (!querySnapshot.empty) {
-                querySnapshot.forEach(async (docSnapshot) => {
-                    const docRef = doc(db, 'funcionarios', docSnapshot.id);
-                    await updateDoc(docRef, {
-                        senha: newPassword
-                    });
-                });
-                alert('Senha atualizada com sucesso!');
-                navigate('/login');
-            } else {
-                setError('Matrícula não encontrada');
+            if (querySnapshot.empty) {
+                setError('Matrícula não encontrada nos registros');
+                return;
             }
+
+            await confirmPasswordReset(auth, oobCode, newPassword);
+
+            querySnapshot.forEach(async (docSnapshot) => {
+                const docRef = doc(db, 'funcionarios', docSnapshot.id);
+                await updateDoc(docRef, {
+                    senha: newPassword
+                });
+            });
+            alert('Senha atualizada com sucesso!');
+            navigate('/login');
         } catch (error) {
             setError('Erro ao atualizar a senha. Por favor, tente novamente mais tarde.');
             console.error('Erro ao atualizar a senha:', error);
@@ -73,5 +77,3 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
-
-

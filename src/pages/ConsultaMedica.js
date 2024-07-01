@@ -183,14 +183,14 @@ const ConsultaMedica = () => {
           </div>
           <div className="form-group">
             <label>Altura:</label>
-            <InputMask mask="9.99" type="text" name="altura" value={formData.altura} onChange={handleChange} />
+            <InputMask mask="9.99m" type="text" name="altura" value={formData.altura} onChange={handleChange} />
             {errors.altura && <span className="error">{errors.altura}</span>}
           </div>
         </div>
         <div className="form-row">
           <div className="form-group">
             <label>Peso:</label>
-            <InputMask mask="999" type='text' name="peso" value={formData.peso} onChange={handleChange}/>
+            <InputMask mask="999kg" type='text' name="peso" value={formData.peso} onChange={handleChange}/>
             {errors.peso && <span className="error">{errors.peso}</span>}
           </div>
           <div className="form-group">
@@ -354,10 +354,12 @@ const ConsultaMedica = () => {
             <input type="date" name="dataConsulta" value={formData.dataConsulta} style={{ width: '100%', textAlign: "center" }} onChange={handleChange} />
           </div>
         </div>
-        </form>
-        </div>
+
         <div className="btn-container">
           <button type="submit" className="btn" style={{ width: "100%", height: "100%" }}>Enviar Consulta</button>
+        </div>
+
+        </form>
         </div>
     </div>
   );
